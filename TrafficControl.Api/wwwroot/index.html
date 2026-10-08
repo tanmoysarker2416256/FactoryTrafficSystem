@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Factory Traffic Control</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Factory Traffic Control</h1>
+        <label>Junction <select id="junction"></select></label>
+        <span id="live" class="pill off">connecting…</span>
+    </header>
+
+    <div id="banner" class="banner hidden"></div>
+    <div id="notice" class="notice hidden"></div>
+
+    <main>
+        <section class="card">
+            <h2>Intersection <small>(confirmed state from the backend)</small></h2>
+            <div id="cross" class="cross"></div>
+            <p class="legend">Fill = confirmed (actual) state. Ring = state the backend wants (desired).</p>
+        </section>
+
+        <section class="card">
+            <h2>Status</h2>
+            <div id="status"></div>
+            <h3>Alerts</h3>
+            <ul id="alerts" class="list"></ul>
+        </section>
+
+        <section class="card">
+            <h2>Queues</h2>
+            <div id="queues" class="queues"></div>
+        </section>
+
+        <section class="card">
+            <h2>Manual control</h2>
+            <div id="manualState" class="muted"></div>
+            <div class="row">
+                <select id="manualDir"><option>NORTH</option><option>SOUTH</option><option>EAST</option><option>WEST</option></select>
+                <button id="manualBtn">Request manual green</button>
+                <button id="autoBtn" class="secondary">Return to automatic</button>
+            </div>
+            <p class="muted">The dashboard only sends intents. The backend decides the safe YELLOW → ALL RED → GREEN sequence.</p>
+        </section>
+
+        <section class="card">
+            <h2>Traffic simulation</h2>
+            <div class="row">
+                <select id="simDir"><option>NORTH</option><option>SOUTH</option><option>EAST</option><option>WEST</option></select>
+                <select id="simType"><option>EMPLOYEE_VEHICLE</option><option>FORKLIFT</option><option>TRUCK</option><option>EMERGENCY</option></select>
+                <input id="simVehicle" value="VH-501" size="8" aria-label="vehicle id">
+                <button id="newIdBtn" class="secondary" title="new vehicle id">new id</button>
+            </div>
+            <div class="row">
+                <button id="arriveBtn">Vehicle arrived</button>
+                <button id="clearBtn" class="secondary">Vehicle cleared</button>
+                <button id="dupBtn" class="secondary">Re-send last event (duplicate)</button>
+            </div>
+            <h3>Controller</h3>
+            <div class="row">
+                <select id="devType"><option>SIGNAL_CONTROLLER</option><option>SENSOR</option><option>SIGNAL</option></select>
+                <select id="devDir"><option>NORTH</option><option>SOUTH</option><option>EAST</option><option>WEST</option></select>
+                <select id="devStatus"><option>OFFLINE</option><option>ONLINE</option><option>DEGRADED</option><option>WARNING</option></select>
+                <button id="devBtn">Send status</button>
+            </div>
+            <div class="row">
+                <select id="ackStatus"><option>ACK</option><option>NACK</option><option>FAILED</option></select>
+                <select id="ackState"><option value="">as requested</option><option>RED</option><option>YELLOW</option><option>GREEN</option></select>
+                <button id="ackBtn">Send for pending command</button>
+            </div>
+            <label class="check"><input type="checkbox" id="autoAck" checked> Simulated controller auto-ACKs commands</label>
+        </section>
+
+        <section class="card wide">
+            <h2>Recent activity</h2>
+            <ul id="history" class="list history"></ul>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

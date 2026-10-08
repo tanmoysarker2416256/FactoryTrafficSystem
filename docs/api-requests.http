@@ -1,0 +1,139 @@
+### Ready-to-run requests (Visual Studio "HTTP file" or the VS Code REST Client extension).
+### Change the port to the one your app prints on startup (use the http:// URL to avoid certificate prompts).
+@host = http://localhost:5000
+@junction = A
+
+### 1. List junctions (with live status)
+GET {{host}}/api/junctions
+
+### 2. Junction detail (config + status)
+GET {{host}}/api/junctions/{{junction}}
+
+### 3. Create a new junction (same engine, default two-phase plan)
+POST {{host}}/api/junctions
+Content-Type: application/json
+
+{ "junction_id": "B", "name": "Loading dock junction" }
+
+### 4. Status: desired vs actual signals, queues, mode, alerts, pending command
+GET {{host}}/api/junctions/{{junction}}/status
+
+### 5. Vehicle arrival (truck, north)
+POST {{host}}/api/sensor-events
+Content-Type: application/json
+
+{
+  "event_id": "evt-10001",
+  "junction_id": "A",
+  "direction": "NORTH",
+  "event_type": "VEHICLE_ARRIVED",
+  "vehicle_id": "VH-501",
+  "vehicle_type": "TRUCK",
+  "sequence_no": 1501,
+  "timestamp": "2026-10-08T10:15:20Z"
+}
+
+### 6. SAME event again -> 200 DUPLICATE, queue unchanged
+### (edit the timestamp of request 5 to "now" if you get 422 "older than 10 min")
+POST {{host}}/api/sensor-events
+Content-Type: application/json
+
+{
+  "event_id": "evt-10001",
+  "junction_id": "A",
+  "direction": "NORTH",
+  "event_type": "VEHICLE_ARRIVED",
+  "vehicle_id": "VH-501",
+  "vehicle_type": "TRUCK",
+  "sequence_no": 1501,
+  "timestamp": "2026-10-08T10:15:20Z"
+}
+
+### 7. Vehicle cleared
+POST {{host}}/api/sensor-events
+Content-Type: application/json
+
+{
+  "event_id": "evt-10002",
+  "junction_id": "A",
+  "direction": "NORTH",
+  "event_type": "VEHICLE_CLEARED",
+  "vehicle_id": "VH-501",
+  "sequence_no": 1502,
+  "timestamp": "2026-10-08T10:16:10Z"
+}
+
+### 8. Emergency vehicle from EAST (forces safe preemption)
+POST {{host}}/api/sensor-events
+Content-Type: application/json
+
+{
+  "event_id": "evt-20001",
+  "junction_id": "A",
+  "direction": "EAST",
+  "event_type": "VEHICLE_ARRIVED",
+  "vehicle_id": "AMB-1",
+  "vehicle_type": "EMERGENCY",
+  "sequence_no": 2001,
+  "timestamp": "2026-10-08T10:20:00Z"
+}
+
+### 9. Manual green request (an INTENT; the engine decides the safe transition)
+POST {{host}}/api/junctions/{{junction}}/commands
+Content-Type: application/json
+
+{ "command": "MANUAL_GREEN_REQUEST", "direction": "WEST" }
+
+### 10. Return to automatic
+POST {{host}}/api/junctions/{{junction}}/commands
+Content-Type: application/json
+
+{ "command": "RETURN_TO_AUTOMATIC" }
+
+### 11. Controller acknowledgement (take command_id from status.pending_command)
+POST {{host}}/api/controller-events
+Content-Type: application/json
+
+{ "command_id": "cmd-REPLACE-ME", "junction_id": "A", "status": "ACK" }
+
+### 12. Controller reports a DIFFERENT state than requested (mismatch -> retry -> degraded)
+POST {{host}}/api/controller-events
+Content-Type: application/json
+
+{ "command_id": "cmd-REPLACE-ME", "junction_id": "A", "status": "ACK", "actual_state": "RED" }
+
+### 13. Controller goes offline
+POST {{host}}/api/device-status
+Content-Type: application/json
+
+{ "event_id": "status-301", "junction_id": "A", "device_type": "SIGNAL_CONTROLLER", "status": "OFFLINE", "timestamp": "2026-10-08T10:30:00Z" }
+
+### 14. Controller back online (engine asks for a confirmed ALL_RED before resuming)
+POST {{host}}/api/device-status
+Content-Type: application/json
+
+{ "event_id": "status-302", "junction_id": "A", "device_type": "SIGNAL_CONTROLLER", "status": "ONLINE", "timestamp": "2026-10-08T10:31:00Z" }
+
+### 15. Sensor offline (engine assumes demand for that direction)
+POST {{host}}/api/device-status
+Content-Type: application/json
+
+{ "event_id": "status-303", "junction_id": "A", "device_type": "SENSOR", "direction": "SOUTH", "status": "OFFLINE", "timestamp": "2026-10-08T10:32:00Z" }
+
+### 16. History (newest first)
+GET {{host}}/api/junctions/{{junction}}/history?limit=50
+
+### 17. Demo helper: stop the simulated controller from answering (ACK never received)
+POST {{host}}/api/simulator/auto-ack
+Content-Type: application/json
+
+{ "auto_ack": false }
+
+### 18. Invalid examples (expect 400 / 404 / 422)
+POST {{host}}/api/sensor-events
+Content-Type: application/json
+
+{ "event_id": "bad-1", "junction_id": "A", "direction": "UP", "event_type": "VEHICLE_ARRIVED", "vehicle_id": "X", "vehicle_type": "BICYCLE", "sequence_no": 1, "timestamp": "2026-10-08T10:00:00Z" }
+
+###
+GET {{host}}/api/junctions/NOPE/status
