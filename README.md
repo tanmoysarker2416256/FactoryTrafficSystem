@@ -1,10 +1,10 @@
-# Factory Traffic Management System
+# Factory Traffic System
 
-Backend Developer Intern Assessment V2 - CSI Smart Tech.
+
 A small event-driven control system for the internal roads of a garment factory (Junction A, extensible to B, C, D).
 ASP.NET Core 8 · SQL Server · plain HTML/JS dashboard.
 
-> **How to read this repo:** the hard part of the assignment is *safe behaviour under concurrency and failure*, not data storage.
+> **How to read this repo:** the hard part  is *safe behaviour under concurrency and failure*, not data storage.
 > So the traffic rules live in a pure, deterministic Domain engine with its own tests; everything else (HTTP, SQL, controller transport, UI) is a replaceable adapter around it.
 
 ---
@@ -14,8 +14,8 @@ ASP.NET Core 8 · SQL Server · plain HTML/JS dashboard.
 **Prerequisites:** .NET 8 SDK, SQL Server (LocalDB or full SQL Server).
 
 1. Open `src/TrafficControl.Api/appsettings.json` and set `ConnectionStrings:Traffic` for your SQL Server.
-   The default targets LocalDB: `Server=(localdb)\MSSQLLocalDB;Database=FactoryTraffic;Trusted_Connection=True;TrustServerCertificate=True`.
-2. Run the API project (`dotnet run --project src/TrafficControl.Api` or F5 in Visual Studio).
+   The default targets LocalDB: `Server=localhost\\SQLEXPRESS;Database=FactoryTraffic;Trusted_Connection=True;TrustServerCertificate=True`.
+2. Run the API project .
    On first start the app creates the database and tables and seeds **Junction A**. No manual SQL is needed.
 3. Open the URL printed on startup:
    - `/` → the dashboard
